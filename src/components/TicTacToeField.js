@@ -38,6 +38,24 @@ class TicTacToeField extends Component {
       withCredentials: true,
     })
   }
+  leaveGame = () => {
+    return axios({
+      method: 'POST',
+      url: `https://hahaton.venturedevs.net/api/games/${this.props.params.id}/leave/`,
+      data: {},
+      crossdomain: true,
+      withCredentials: true,
+    })
+  }
+  surrenderGame = () => {
+    return axios({
+      method: 'POST',
+      url: `https://hahaton.venturedevs.net/api/games/${this.props.params.id}/surrender/`,
+      data: {},
+      crossdomain: true,
+      withCredentials: true,
+    })
+  }
   fetchMe = () => {
     return axios({
       method: 'GET',
@@ -74,43 +92,60 @@ class TicTacToeField extends Component {
   componentWillUnmount () {
     clearInterval(this.state.setInternalIndex)
   }
-    render () {
+  render () {
     if(this.state.game.started) {
       return (
         <div>
           <table className='table table-bordered'>
             <tbody>
-              {
-                this.state.game.board.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    {
-                      row.map((cell, columnIndex) => (
-                        <td
-                          key={columnIndex}
-                          onClick={() => this.sendMove(rowIndex, columnIndex)
-                            .then(this.fetchGame)
-                            .catch(alert("Not your turn!"))
-                            .then(response => {
-                              if (response.status === 200) {
-                                this.setState({ game: response.data })
-                              } else {
-                                console.error(response.status)
-                              }
-                            })}
-                        >
-                          {cell}
-                        </td>
-                      ))
-                    }
-                  </tr>
-                ))
-              }
+            {
+              this.state.game.board.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {
+                    row.map((cell, columnIndex) => (
+                      <td
+                        key={columnIndex}
+                        onClick={() => this.sendMove(rowIndex, columnIndex)
+                          .then(this.fetchGame)
+                          .then(response => {
+                            if (response.status === 200) {
+                              this.setState({ game: response.data })
+                            } else {
+                              console.error(response.status)
+                            }
+                          })
+                          .catch(error => {
+                            if(error.response.status === 400) {
+                              alert("Not your turn")
+                            }
+                          })
+                        }
+                      >
+                        {cell}
+                      </td>
+                    ))
+                  }
+                </tr>
+              ))
+            }
             </tbody>
           </table>
+          <br />
+          <br />
+          <button className="btn btn-danger" onClick={this.leaveGame}>
+            Leave game
+          </button>
+          <br />
+          <br />
+          <button className="btn btn-outline-danger" onClick={this.surrenderGame}>
+            Surrender game
+          </button>
+          <br />
           <br />
           <Link to="/rooms">
             Go back to all rooms
           </Link>
+          <br />
         </div>
       )
     } else {
